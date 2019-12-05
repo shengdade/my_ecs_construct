@@ -1,6 +1,3 @@
 {
-  "app": "npx ts-node bin/my_ecs_construct.ts",
-  "context": {
-    "@aws-cdk/core:enableStackNameDuplicates": "true"
-  }
+  "app": "npx ts-node bin/my_ecs_construct.ts"
 }
