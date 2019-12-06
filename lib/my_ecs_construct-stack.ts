@@ -16,13 +16,12 @@ export class MyEcsConstructStack extends cdk.Stack {
     });
 
     // Create a load-balanced Fargate service and make it public
-    new ecs_patterns.ApplicationLoadBalancedFargateService(
+    const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(
       this,
       'MyFargateService',
       {
         cluster: cluster, // Required
         cpu: 512, // Default is 256
-        desiredCount: 6, // Default is 1
         taskImageOptions: {
           image: ecs.ContainerImage.fromRegistry('amazon/amazon-ecs-sample')
         },
@@ -30,5 +29,22 @@ export class MyEcsConstructStack extends cdk.Stack {
         publicLoadBalancer: true // Default is false
       }
     );
+
+    const scaling = fargateService.service.autoScaleTaskCount({
+      minCapacity: 5,
+      maxCapacity: 100
+    });
+    scaling.scaleOnCpuUtilization('CpuScaling', {
+      policyName: 'TargetCpuScaling',
+      targetUtilizationPercent: 50,
+      scaleInCooldown: cdk.Duration.seconds(60),
+      scaleOutCooldown: cdk.Duration.seconds(60)
+    });
+    scaling.scaleOnMemoryUtilization('MemoryScaling', {
+      policyName: 'TargetMemoryScaling',
+      targetUtilizationPercent: 50,
+      scaleInCooldown: cdk.Duration.seconds(60),
+      scaleOutCooldown: cdk.Duration.seconds(60)
+    });
   }
 }
